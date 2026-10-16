@@ -1,0 +1,1308 @@
+{
+  "metadata": {
+    "title": "Poland Energy Sector Attacks – 29 December 2025",
+    "description": "Interactive, defensive reconstruction of the coordinated destructive cyberattacks against the Polish energy sector on 29 December 2025, based solely on two public CERT Polska reports. All facts, dates, technologies and attack paths are drawn from the source reports; nothing has been invented.",
+    "sources": [
+      {
+        "id": "initial-report",
+        "title": "Energy Sector Incident Report – 29 December",
+        "publisher": "CERT Polska",
+        "file": "CERT_Polska_Energy_Sector_Incident_Report_2025.pdf",
+        "printed_page_offset": 1,
+        "short": "Initial Report",
+        "url": "https://cert.pl/en/posts/2026/01/incident-report-energy-sector-2025/",
+        "pdf_url": "https://cert.pl/uploads/docs/CERT_Polska_Energy_Sector_Incident_Report_2025.pdf"
+      },
+      {
+        "id": "follow-up-report",
+        "title": "Follow-Up Analysis of the 29 December 2025 Energy Sector Incident",
+        "publisher": "CERT Polska",
+        "file": "CERT_Polska_Energy_Sector_Incident_Follow_up_Report_2025.pdf",
+        "printed_page_offset": 1,
+        "short": "Follow-Up Analysis",
+        "url": "https://cert.pl/en/posts/2026/08/incident-follow-up-report-energy-sector-2025/",
+        "pdf_url": "https://cert.pl/uploads/docs/CERT_Polska_Energy_Sector_Incident_Follow_up_Report_2025.pdf"
+      }
+    ],
+    "location_accuracy_notice": "Exact facility locations are not publicly specified in the source reports. Visual positions in this application are schematic and do not represent real coordinates or sites.",
+    "attribution_notice": "CERT Polska links the direct attack infrastructure to the activity cluster publicly known as 'Static Tundra' / 'Berserk Bear' / 'Ghost Blizzard' / 'Dragonfly'. Similarities between the wipers and 'Sandworm' tooling were found too weak to be conclusive. Attribution is presented here exactly as the reports frame it, not as settled fact.",
+    "page_notice": "Page numbers are PDF page numbers as shown by a PDF viewer. The number printed in each report's footer is one lower."
+  },
+  "incidents": [
+    {
+      "id": "renewable-energy-farms",
+      "name": "Renewable Energy Facilities (wind & solar farms)",
+      "category": "renewable-energy",
+      "facility_type": "At least 30 wind and solar farms (Grid Connection Point substations)",
+      "country": "Poland",
+      "location_precision": "country-only",
+      "date": "2025-12-29",
+      "status": "confirmed",
+      "summary": "At least 30 wind and solar farms were attacked. The attack caused loss of communication between the facilities and distribution system operators (DSOs) and loss of remote control, but did not affect ongoing electricity generation and did not impact the stability of the Polish power system. Destructive actions targeted OT devices at the Grid Connection Point (GCP) substations and appeared at least partially automated.",
+      "initial_access": [
+        "Internet-exposed FortiGate VPN interface without multi-factor authentication",
+        "Accounts statically defined in the FortiGate configuration",
+        "Likely credential reuse across multiple facilities",
+        "Some FortiGate devices had been vulnerable in the past, including to remote code execution"
+      ],
+      "affected_assets": [
+        "FortiGate VPN concentrator / firewall",
+        "Hitachi RTU560 controllers (firmware 12.6.6.0, 12.7.3.0, 13.1.1.0, 13.5.2.0)",
+        "Mikronika RTUs (Linux-based)",
+        "Hitachi Relion 650 v1.1 protection relays (IEDs)",
+        "Mikronika Syndis HMI computers (Windows 10)",
+        "Moxa NPort 6xxx serial device servers"
+      ],
+      "technologies": [
+        "FortiGate",
+        "Hitachi",
+        "Mikronika",
+        "Moxa",
+        "Windows"
+      ],
+      "protocols": [
+        "DNP3",
+        "IEC 101",
+        "SSH",
+        "FTP",
+        "SMB",
+        "RDP"
+      ],
+      "actions": [
+        "Logged into Hitachi RTU560 web interface with default 'Default' account and uploaded corrupted firmware (240 bytes of 0xFF at the program entry point), causing a reboot loop",
+        "Deleted all files on Mikronika RTUs over SSH as root using default credentials",
+        "Deleted essential system files on Hitachi Relion 650 relays via default FTP account",
+        "Accessed Mikronika Syndis HMI via RDP using known default local admin password; enabled admin shares and SMB (TCP 445) via PowerShell, then ran Impacket reconnaissance and executed DynoWiper (C:\\Source.exe)",
+        "Factory-reset all Moxa NPort devices, changed passwords and set IP addresses to unreachable values (e.g. 127.0.0.1)",
+        "Factory-reset all analyzed FortiGate devices to hinder recovery and erase traces"
+      ],
+      "impact": [
+        "Loss of communication between facilities and the DSO",
+        "Loss of remote control / loss of view",
+        "Ongoing electricity generation NOT affected",
+        "No impact on Polish power system stability"
+      ],
+      "mitre_attack": [
+        {
+          "framework": "ICS",
+          "technique_id": "T0822",
+          "technique_name": "External Remote Services"
+        },
+        {
+          "framework": "ICS",
+          "technique_id": "T0812",
+          "technique_name": "Default Credentials"
+        },
+        {
+          "framework": "ICS",
+          "technique_id": "T0857",
+          "technique_name": "System Firmware"
+        },
+        {
+          "framework": "ICS",
+          "technique_id": "T0809",
+          "technique_name": "Data Destruction"
+        },
+        {
+          "framework": "ICS",
+          "technique_id": "T0827",
+          "technique_name": "Loss of Control"
+        },
+        {
+          "framework": "ICS",
+          "technique_id": "T0829",
+          "technique_name": "Loss of View"
+        },
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1485",
+          "technique_name": "Data Destruction"
+        }
+      ],
+      "source_references": [
+        {
+          "source_id": "initial-report",
+          "section": "Attack on Renewable Energy Plants",
+          "page": 6
+        },
+        {
+          "source_id": "initial-report",
+          "section": "Attack Vector on the GCP / Destructive Activities",
+          "page": 8
+        },
+        {
+          "source_id": "initial-report",
+          "section": "Hitachi RTUs / Mikronika / Relion / Moxa",
+          "page": 10
+        }
+      ],
+      "impact_types": [
+        "loss-of-view-control",
+        "device-destruction",
+        "data-destruction",
+        "recovery-hindrance"
+      ],
+      "domains": [
+        "ot"
+      ],
+      "short_name": "Renewables (≥30)",
+      "facility_count_min": 30
+    },
+    {
+      "id": "large-chp-plant",
+      "name": "Large CHP Plant",
+      "category": "large-chp",
+      "facility_type": "Combined heat and power plant supplying heat to nearly half a million customers",
+      "country": "Poland",
+      "location_precision": "country-only",
+      "date": "2025-12-29",
+      "status": "partially-prevented",
+      "summary": "A large CHP plant was targeted after a long-term infiltration of its IT infrastructure, with theft of sensitive information and compromise of privileged Active Directory accounts. DynoWiper was distributed via Group Policy, but the organization's EDR blocked runtime execution on more than 100 machines using a canary mechanism. The attacker also attempted to destroy data directly on server disks and RAID arrays.",
+      "initial_access": [
+        "FortiGate SSL-VPN portal with statically defined accounts and no two-factor authentication",
+        "Connections via Tor nodes and compromised Polish and foreign IP addresses"
+      ],
+      "affected_assets": [
+        "FortiGate perimeter device (SSL-VPN)",
+        "Jump hosts",
+        "Active Directory domain controllers",
+        "Workstations and servers",
+        "Systems containing 'scada' in their names",
+        "NAS server"
+      ],
+      "technologies": [
+        "FortiGate",
+        "Windows",
+        "Active Directory",
+        "DynoWiper",
+        "Impacket",
+        "Rubeus",
+        "PsExec"
+      ],
+      "protocols": [
+        "SSL-VPN",
+        "RDP",
+        "SMB",
+        "HTTP"
+      ],
+      "actions": [
+        "Used SSL-VPN bookmarks with statically configured credentials to reach jump hosts via RDP",
+        "Reconnaissance with nircmd (screenshots), PsExec, nslookup, ping, Advanced Port/IP Scanner, focused on SCADA/OT systems",
+        "Deployed rsocx reverse SOCKS proxy (r.exe / rsocx.exe) to a server at 31.172.71[.]5",
+        "LSASS memory dump; Rubeus Diamond Ticket; ntds.dit, SAM and SYSTEM hive theft via reg and vssadmin",
+        "Exfiltrated compressed data over HTTP to 31.172.71[.]5 via Invoke-RestMethod",
+        "Stole FortiGate configuration files via Microsoft Edge in private mode",
+        "Added a permissive FortiGate firewall rule with logging disabled, mimicking an existing institution name",
+        "Distributed DynoWiper via a Group Policy Object pointing to a network share",
+        "Attempted direct server-disk destruction using Tiny Core Linux booted over KVM with dd, and attempted RAID array reconfiguration via Intel Rapid Storage Technology"
+      ],
+      "impact": [
+        "DynoWiper execution BLOCKED by EDR canary mechanism on 100+ machines",
+        "A second, slightly modified wiper attempt also unsuccessful",
+        "Long-term theft of sensitive operational data and credentials",
+        "Attempted but uncertain destruction of server disks / RAID arrays"
+      ],
+      "mitre_attack": [
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1133",
+          "technique_name": "External Remote Services"
+        },
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1078.003",
+          "technique_name": "Valid Accounts: Local Accounts"
+        },
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1003",
+          "technique_name": "OS Credential Dumping"
+        },
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1558",
+          "technique_name": "Steal or Forge Kerberos Tickets"
+        },
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1484.001",
+          "technique_name": "Group Policy Modification"
+        },
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1485",
+          "technique_name": "Data Destruction"
+        },
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1561.002",
+          "technique_name": "Disk Wipe: Disk Structure Wipe"
+        },
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1567",
+          "technique_name": "Exfiltration Over Web Service"
+        }
+      ],
+      "source_references": [
+        {
+          "source_id": "initial-report",
+          "section": "Attack on the Large CHP Plant",
+          "page": 13
+        },
+        {
+          "source_id": "initial-report",
+          "section": "Destruction of Files on Workstations",
+          "page": 20
+        },
+        {
+          "source_id": "initial-report",
+          "section": "Destruction of Data on Server Disks",
+          "page": 21
+        }
+      ],
+      "impact_types": [
+        "data-destruction",
+        "credential-theft",
+        "data-theft"
+      ],
+      "domains": [
+        "it",
+        "ot"
+      ],
+      "short_name": "Large CHP",
+      "facility_count_min": 1
+    },
+    {
+      "id": "second-chp-plant",
+      "name": "Second (smaller) CHP Plant",
+      "category": "second-chp",
+      "facility_type": "CHP plant supplying heat to approximately 50,000 residents",
+      "country": "Poland",
+      "location_precision": "country-only",
+      "date": "2025-12-29",
+      "status": "confirmed",
+      "summary": "A smaller CHP plant's industrial control systems were attacked at around 7:00 a.m. The attacker reached the plant's OT network through a novel path: a compromised wind-farm FortiGate, a Teltonika RUTX50 cellular router, an SSH tunnel into a DSO-managed private APN, and a WAGO PFC200 controller bridging the APN to the plant's OT network. Siemens PLCs were placed in STOP mode, shutting down a steam turbine and the process-water treatment system. CERT Polska states this is, to its knowledge, the first observed real-world use of a private APN as an OT access vector.",
+      "initial_access": [
+        "Compromised FortiGate VPN/firewall at a wind farm (shared with the renewable-energy incident)",
+        "SSH access to a Teltonika RUTX50 cellular router (how the changed password was obtained is unknown)",
+        "SSH tunnel into the DSO-managed private APN",
+        "WAGO PFC200 web admin interface reachable on its WAN interface with default 'admin' credentials"
+      ],
+      "affected_assets": [
+        "FortiGate VPN concentrator / firewall (wind farm)",
+        "Teltonika RUTX50 cellular router",
+        "WAGO PFC200 PLC with integrated cellular modem",
+        "SCADA server",
+        "Siemens S7-300, S7-1200 and S7-1500 PLCs",
+        "7 Moxa serial device servers and 3 Moxa network switches",
+        "ABB ACS series variable frequency drives",
+        "Schneider Electric ATV6xx variable frequency drives"
+      ],
+      "technologies": [
+        "FortiGate",
+        "Teltonika",
+        "WAGO",
+        "Siemens",
+        "Moxa",
+        "ABB",
+        "Schneider Electric"
+      ],
+      "protocols": [
+        "SSH",
+        "DNP3",
+        "S7",
+        "Modbus",
+        "CODESYS",
+        "RTSP",
+        "RDP",
+        "VNC",
+        "HTTP",
+        "HTTPS",
+        "private APN"
+      ],
+      "actions": [
+        "Logged into the Teltonika RUTX50 via SSH multiple times during December 2025 and established an SSH tunnel to the private APN",
+        "Scanned the private APN for VNC, HTTP, S7 and Modbus services (from 18 December 2025)",
+        "Used default credentials on the WAGO PFC200 web interface; SSH likely enabled via the web interface, then tunneled into the plant's OT network",
+        "Unsuccessful login attempts against the plant's firewall/VPN web interface (admin, user, and a deployer username)",
+        "Scanned the internal network (S7 102/TCP, Modbus 502/TCP, CODESYS 11740/TCP, RTSP 554/TCP, RDP, VNC, HTTP/HTTPS)",
+        "Connected to three Siemens PLCs over S7 on 25 December; on 29 December placed S7-300, S7-1200 and S7-1500 PLCs in STOP mode, password-protected against changes",
+        "Factory-reset 7 Moxa serial device servers and 3 Moxa switches, changed passwords, set IPs to unreachable values (automated)",
+        "Connected to two ABB ACS drive web interfaces (actions unknown); failed to reach Schneider Electric ATV6xx drives (wrong port)",
+        "Corrupted the WAGO controller's partition table; factory-reset the Teltonika and the wind-farm FortiGate to cover tracks"
+      ],
+      "impact": [
+        "Steam turbine shut down",
+        "Process-water treatment system shut down",
+        "Interruption of the cogeneration process (short-term outage only)",
+        "No disruption to heat or electricity supply for customers",
+        "WAGO controller, Teltonika router and FortiGate rendered inoperable / factory-reset (track covering)"
+      ],
+      "mitre_attack": [
+        {
+          "framework": "ICS",
+          "technique_id": "T0822",
+          "technique_name": "External Remote Services"
+        },
+        {
+          "framework": "ICS",
+          "technique_id": "T0886",
+          "technique_name": "Remote Services"
+        },
+        {
+          "framework": "ICS",
+          "technique_id": "T0846",
+          "technique_name": "Remote System Discovery"
+        },
+        {
+          "framework": "ICS",
+          "technique_id": "T0812",
+          "technique_name": "Default Credentials"
+        },
+        {
+          "framework": "ICS",
+          "technique_id": "T0816",
+          "technique_name": "Device Restart/Shutdown"
+        },
+        {
+          "framework": "ICS",
+          "technique_id": "T0892",
+          "technique_name": "Change Credential"
+        },
+        {
+          "framework": "ICS",
+          "technique_id": "T0827",
+          "technique_name": "Loss of Control"
+        }
+      ],
+      "source_references": [
+        {
+          "source_id": "follow-up-report",
+          "section": "Attack on the Second CHP Plant",
+          "page": 6
+        },
+        {
+          "source_id": "follow-up-report",
+          "section": "Leveraging the Private APN for Lateral Movement",
+          "page": 10
+        },
+        {
+          "source_id": "follow-up-report",
+          "section": "Disruptive Actions at the CHP Plant",
+          "page": 12
+        },
+        {
+          "source_id": "follow-up-report",
+          "section": "Summary",
+          "page": 17
+        }
+      ],
+      "impact_types": [
+        "process-disruption",
+        "loss-of-view-control",
+        "device-destruction",
+        "recovery-hindrance"
+      ],
+      "domains": [
+        "ot"
+      ],
+      "short_name": "Second CHP",
+      "facility_count_min": 1
+    },
+    {
+      "id": "manufacturing-company",
+      "name": "Manufacturing Sector Company",
+      "category": "manufacturing",
+      "facility_type": "Private manufacturing company (opportunistic target, not an energy entity)",
+      "country": "Poland",
+      "location_precision": "country-only",
+      "date": "2025-12-29",
+      "status": "confirmed",
+      "summary": "On the same day, and in coordination with the energy-sector attacks, the attacker targeted a manufacturing company via a previously vulnerable Fortinet device whose configuration had been stolen and publicly leaked. Persistence was established through FortiGate's built-in scripting, and the LazyWiper PowerShell wiper was distributed via Group Policy. CERT Polska describes the target as opportunistic and not linked to the other affected organizations.",
+      "initial_access": [
+        "Fortinet perimeter device, previously vulnerable, with a stolen and publicly disclosed configuration (posted on a criminal forum)",
+        "Later, SSL-VPN tunnel using previously obtained credentials"
+      ],
+      "affected_assets": [
+        "Fortinet / FortiGate perimeter device",
+        "Domain controller",
+        "Workstations and servers"
+      ],
+      "technologies": [
+        "FortiGate",
+        "Windows",
+        "Active Directory",
+        "LazyWiper",
+        "Impacket"
+      ],
+      "protocols": [
+        "SSL-VPN",
+        "SMB",
+        "HTTP"
+      ],
+      "actions": [
+        "Created two weekly FortiGate CLI scripts to exfiltrate a privileged user's password and to weaken security settings (unset two-factor, unset trusthost)",
+        "Exfiltrated script output to an attacker-controlled Slack channel via FortiGate's Slack notification feature",
+        "Used Impacket for lateral movement",
+        "Gained administrative access to a domain controller and distributed the LazyWiper PowerShell wiper via a Group Policy Object pulling from a network share"
+      ],
+      "impact": [
+        "Deployment of the LazyWiper destructive PowerShell wiper",
+        "Persistent FortiGate access surviving password changes",
+        "Credential exfiltration to an attacker-controlled Slack channel"
+      ],
+      "mitre_attack": [
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1133",
+          "technique_name": "External Remote Services"
+        },
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1078.003",
+          "technique_name": "Valid Accounts: Local Accounts"
+        },
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1053",
+          "technique_name": "Scheduled Task/Job"
+        },
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1567.004",
+          "technique_name": "Exfiltration Over Webhook"
+        },
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1484.001",
+          "technique_name": "Group Policy Modification"
+        },
+        {
+          "framework": "Enterprise",
+          "technique_id": "T1485",
+          "technique_name": "Data Destruction"
+        }
+      ],
+      "source_references": [
+        {
+          "source_id": "initial-report",
+          "section": "Attack on a Manufacturing Sector Company",
+          "page": 23
+        },
+        {
+          "source_id": "initial-report",
+          "section": "Modification of FortiGate Configuration for Persistence",
+          "page": 23
+        },
+        {
+          "source_id": "initial-report",
+          "section": "Execution of the File-Destruction Script",
+          "page": 26
+        }
+      ],
+      "impact_types": [
+        "data-destruction",
+        "credential-theft"
+      ],
+      "domains": [
+        "it"
+      ],
+      "short_name": "Manufacturing",
+      "facility_count_min": 1
+    }
+  ],
+  "timeline": [
+    {
+      "id": "evt-early-infiltration",
+      "date": "2025-03-01",
+      "date_label": "March–July 2025",
+      "precision": "date-range",
+      "incident_id": "large-chp-plant",
+      "title": "Early infiltration of the large CHP plant",
+      "description": "Suspicious activity in the large CHP plant's infrastructure: reconnaissance, unauthorized data access and attempts to obtain credentials. First attacker activity dated to March–May 2025; access gained to a jump host via a FortiGate interface address, then to the domain controller.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "initial-report",
+          "section": "Early Activity in the Organization's Infrastructure",
+          "page": 13
+        }
+      ],
+      "phase": "reconnaissance",
+      "outcome": "success",
+      "date_end": "2025-07-31",
+      "time": null
+    },
+    {
+      "id": "evt-privilege-escalation",
+      "date": "2025-07-16",
+      "date_label": "Second half of July 2025",
+      "precision": "date-range",
+      "incident_id": "large-chp-plant",
+      "title": "Privilege escalation and ntds.dit theft (first cluster)",
+      "description": "Base64 ZIP decoded via certutil, LSASS dump, Rubeus Diamond Ticket, and a dump of the full Active Directory database (ntds.dit) in the second half of July. The first activity cluster then went quiet.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "initial-report",
+          "section": "Privilege Escalation within the Infrastructure",
+          "page": 14
+        }
+      ],
+      "phase": "credential-access",
+      "outcome": "success",
+      "date_end": "2025-07-31",
+      "time": null
+    },
+    {
+      "id": "evt-november-vpn",
+      "date": "2025-11-01",
+      "date_label": "November 2025",
+      "precision": "date-range",
+      "incident_id": null,
+      "title": "November 2025 VPN logins (network indicators)",
+      "description": "VPN logins recorded from several IP addresses used against multiple entities (per the Indicators of Compromise), including 193.200.17[.]163, 185.82.127[.]20, 41.111.178[.]225 and 159.69.50[.]242.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "initial-report",
+          "section": "Indicators of Compromise – Network Indicators",
+          "page": 40
+        }
+      ],
+      "phase": "initial-access",
+      "outcome": "success",
+      "date_end": "2025-11-30",
+      "time": null
+    },
+    {
+      "id": "evt-hmi-config-change",
+      "date": "2025-12-08",
+      "date_label": "8 December 2025",
+      "precision": "date-only",
+      "incident_id": "renewable-energy-farms",
+      "title": "HMI configuration changes at a renewable facility",
+      "description": "On a Mikronika Syndis HMI (Windows 10), the attacker enabled administrative shares and created a firewall rule 'Microsoft Update' allowing TCP 445, enabling SMB disk access and remote command execution, all via PowerShell.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "initial-report",
+          "section": "Mikronika HMI Computers",
+          "page": 11
+        }
+      ],
+      "phase": "persistence",
+      "outcome": "success",
+      "date_end": null,
+      "time": null
+    },
+    {
+      "id": "evt-teltonika-ssh",
+      "date": "2025-12-18",
+      "date_label": "18 December 2025",
+      "precision": "date-only",
+      "incident_id": "second-chp-plant",
+      "title": "SSH access to Teltonika router & private APN scanning begins",
+      "description": "Recovered logs show successful SSH logins to the Teltonika RUTX50 cellular router. From 18 December the attacker repeatedly scanned the private APN for VNC, HTTP, S7 and Modbus services, and discovered the WAGO PFC200 controller.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "follow-up-report",
+          "section": "Activity at the Wind Farm / Leveraging the Private APN",
+          "page": 9
+        }
+      ],
+      "phase": "lateral-movement",
+      "outcome": "success",
+      "date_end": null,
+      "time": null
+    },
+    {
+      "id": "evt-chp2-recon-start",
+      "date": "2025-12-18",
+      "date_label": "18–25 December 2025",
+      "precision": "date-range",
+      "incident_id": "second-chp-plant",
+      "title": "Reconnaissance of the second CHP plant OT network",
+      "description": "After gaining access to the CHP plant's network, the attacker conducted reconnaissance and attempts to expand access between 18 and 25 December 2025, including unsuccessful firewall login attempts.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "follow-up-report",
+          "section": "Reconnaissance of the CHP Plant Network",
+          "page": 10
+        }
+      ],
+      "phase": "reconnaissance",
+      "outcome": "success",
+      "date_end": "2025-12-25",
+      "time": null
+    },
+    {
+      "id": "evt-chp2-scan",
+      "date": "2025-12-21",
+      "date_label": "21 December 2025 (Sunday)",
+      "precision": "date-only",
+      "incident_id": "second-chp-plant",
+      "title": "Internal network scan of the second CHP plant",
+      "description": "Internal network scanning targeting S7 (102/TCP), Modbus (502/TCP), CODESYS (11740/TCP), RTSP (554/TCP), RDP, VNC and HTTP/HTTPS. In one subnet, scanning began at the SCADA system's IP, suggesting prior target identification.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "follow-up-report",
+          "section": "Network Scanning",
+          "page": 11
+        }
+      ],
+      "phase": "reconnaissance",
+      "outcome": "success",
+      "date_end": null,
+      "time": null
+    },
+    {
+      "id": "evt-chp2-recon2",
+      "date": "2025-12-22",
+      "date_label": "22 December 2025",
+      "precision": "date-only",
+      "incident_id": "second-chp-plant",
+      "title": "Further reconnaissance (RDP hosts) at the second CHP plant",
+      "description": "Connections to remote-desktop ports on two hosts, most likely manual attempts to identify valid credentials; no successful connection was found.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "follow-up-report",
+          "section": "Other Reconnaissance Activity",
+          "page": 11
+        }
+      ],
+      "phase": "reconnaissance",
+      "outcome": "attempted",
+      "date_end": null,
+      "time": null
+    },
+    {
+      "id": "evt-chp1-recon-dc",
+      "date": "2025-12-22",
+      "date_label": "22 December 2025",
+      "precision": "date-only",
+      "incident_id": "large-chp-plant",
+      "title": "ping / nslookup reconnaissance on a domain controller",
+      "description": "Domain controller event log shows nslookup and ping process creations (including names containing 'scada' and 'fortigate') on 22 December 2025.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "initial-report",
+          "section": "Infrastructure Reconnaissance Traces",
+          "page": 17
+        }
+      ],
+      "phase": "reconnaissance",
+      "outcome": "success",
+      "date_end": null,
+      "time": null
+    },
+    {
+      "id": "evt-chp2-s7",
+      "date": "2025-12-25",
+      "date_label": "25 December 2025 (Christmas Day)",
+      "precision": "date-only",
+      "incident_id": "second-chp-plant",
+      "title": "S7 connections to three Siemens PLCs",
+      "description": "The attacker successfully established S7 connections to three Siemens PLCs, most likely reconnaissance in preparation for subsequent destructive actions.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "follow-up-report",
+          "section": "Other Reconnaissance Activity",
+          "page": 12
+        }
+      ],
+      "phase": "reconnaissance",
+      "outcome": "success",
+      "date_end": null,
+      "time": null
+    },
+    {
+      "id": "evt-mikronika-scan",
+      "date": "2025-12-25",
+      "date_label": "25 December 2025",
+      "precision": "date-only",
+      "incident_id": "renewable-energy-farms",
+      "title": "Network scanning and login attempts on Mikronika RTUs",
+      "description": "Recovered Mikronika device logs indicate that on 25 December 2025, at all facilities where the device was deployed, the attacker conducted network scanning and login attempts.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "initial-report",
+          "section": "Mikronika RTUs",
+          "page": 10
+        }
+      ],
+      "phase": "reconnaissance",
+      "outcome": "success",
+      "date_end": null,
+      "time": null
+    },
+    {
+      "id": "evt-wiper-compile",
+      "date": "2025-12-26",
+      "date_label": "26 December 2025",
+      "precision": "exact",
+      "incident_id": null,
+      "title": "DynoWiper variant A compiled",
+      "description": "DynoWiper samples Source.exe and dynacom_update.exe carry a compilation timestamp of 2025-12-26 13:51:11 UTC (version A). Compilation dates can be forged but match the attack chronology.",
+      "confidence": "likely",
+      "source_references": [
+        {
+          "source_id": "initial-report",
+          "section": "Malware Analysis – DynoWiper",
+          "page": 28
+        }
+      ],
+      "phase": "preparation",
+      "outcome": "success",
+      "date_end": null,
+      "time": "13:51:11"
+    },
+    {
+      "id": "evt-chp2-attack",
+      "date": "2025-12-29",
+      "date_label": "29 December 2025, ~05:30–10:10 a.m.",
+      "precision": "approximate",
+      "incident_id": "second-chp-plant",
+      "title": "Disruptive actions at the second CHP plant",
+      "description": "Attacker activity in the CHP plant network ran from ~05:30 to ~10:10 a.m. Siemens S7-300/1200/1500 PLCs were placed in STOP mode (password-protected), shutting down the steam turbine and process-water treatment and interrupting cogeneration. Moxa devices were factory-reset. Recovery began ~07:30 a.m. while the attacker was still present.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "follow-up-report",
+          "section": "Disruptive Actions at the CHP Plant",
+          "page": 12
+        }
+      ],
+      "phase": "impact",
+      "outcome": "success",
+      "date_end": null,
+      "time": "05:30"
+    },
+    {
+      "id": "evt-renewable-attack",
+      "date": "2025-12-29",
+      "date_label": "29 December 2025, morning–afternoon",
+      "precision": "approximate",
+      "incident_id": "renewable-energy-farms",
+      "title": "Destructive actions at renewable facilities",
+      "description": "Destructive actions initiated at each affected facility against accessible devices. RTU event log shows firmware 13.5.3.0 transferred at 13:57 on 2025-12-29, followed by a manual reset and gateway restart. Devices damaged in ascending IP order; the activity appeared at least partially automated.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "initial-report",
+          "section": "Destructive Activities",
+          "page": 8
+        }
+      ],
+      "phase": "impact",
+      "outcome": "success",
+      "date_end": null,
+      "time": null
+    },
+    {
+      "id": "evt-chp1-wiper",
+      "date": "2025-12-29",
+      "date_label": "29 December 2025, morning",
+      "precision": "approximate",
+      "incident_id": "large-chp-plant",
+      "title": "DynoWiper distributed via GPO at the large CHP plant – blocked by EDR",
+      "description": "DynoWiper was placed on a network share and executed via a Group Policy Object. The EDR blocked runtime execution using a canary mechanism, halting data overwriting on 100+ machines. A second, slightly modified attempt (schtask.exe variants compiled 2025-12-29) also failed.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "initial-report",
+          "section": "Destruction of Files on Workstations",
+          "page": 20
+        }
+      ],
+      "phase": "impact",
+      "outcome": "blocked",
+      "date_end": null,
+      "time": null
+    },
+    {
+      "id": "evt-manufacturing-wiper",
+      "date": "2025-12-29",
+      "date_label": "29 December 2025",
+      "precision": "date-only",
+      "incident_id": "manufacturing-company",
+      "title": "LazyWiper distributed via GPO at the manufacturing company",
+      "description": "Coordinated with the energy-sector attacks, the attacker used a domain controller to distribute the LazyWiper PowerShell wiper via a Group Policy Object pulling the payload from a network share.",
+      "confidence": "confirmed",
+      "source_references": [
+        {
+          "source_id": "initial-report",
+          "section": "Execution of the File-Destruction Script",
+          "page": 26
+        }
+      ],
+      "phase": "impact",
+      "outcome": "success",
+      "date_end": null,
+      "time": null
+    }
+  ],
+  "attack_paths": [
+    {
+      "id": "path-renewable",
+      "name": "Renewable Facilities – GCP substation compromise",
+      "incident_id": "renewable-energy-farms",
+      "nodes": [
+        {
+          "id": "r-attacker",
+          "label": "Internet / Attacker",
+          "zone": "internet",
+          "role": "External threat actor",
+          "activity": "VPN authentication against Internet-exposed interface without MFA; likely credential reuse",
+          "service": "FortiGate SSL-VPN",
+          "impact": "Initial access",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "initial-report",
+            "section": "Attack Vector on the GCP",
+            "page": 8
+          },
+          "phase": "initial-access",
+          "outcome": "success"
+        },
+        {
+          "id": "r-fortigate",
+          "label": "FortiGate VPN / Firewall",
+          "zone": "edge",
+          "role": "VPN concentrator and firewall at the GCP",
+          "activity": "Attacker held administrative privileges; obtained VPN account with access to all subnets; factory-reset at end",
+          "service": "SSL-VPN / HTTPS admin",
+          "impact": "Pivot into all VLANs; evidence destruction",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "initial-report",
+            "section": "Attack Vector on the GCP",
+            "page": 8
+          },
+          "phase": "lateral-movement",
+          "outcome": "success"
+        },
+        {
+          "id": "r-gcp",
+          "label": "GCP OT Network",
+          "zone": "ot",
+          "role": "Grid Connection Point substation network",
+          "activity": "Devices attacked in ascending IP order, at least partially automated",
+          "service": "Multiple OT protocols",
+          "impact": "OT device access",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "initial-report",
+            "section": "Destructive Activities",
+            "page": 8
+          },
+          "phase": "lateral-movement",
+          "outcome": "success"
+        },
+        {
+          "id": "r-rtu",
+          "label": "Hitachi RTU560",
+          "zone": "plc",
+          "role": "Remote Terminal Unit (telecontrol)",
+          "activity": "Default 'Default' account used to upload corrupted firmware (240 bytes of 0xFF at entry point)",
+          "service": "Web interface",
+          "impact": "Reboot loop / device bricked",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "initial-report",
+            "section": "Hitachi RTUs",
+            "page": 8
+          },
+          "phase": "impact",
+          "outcome": "success"
+        },
+        {
+          "id": "r-mikronika-rtu",
+          "label": "Mikronika RTU",
+          "zone": "plc",
+          "role": "Linux-based RTU",
+          "activity": "SSH root login with default credentials; command to delete all files",
+          "service": "SSH",
+          "impact": "Device failure",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "initial-report",
+            "section": "Mikronika RTUs",
+            "page": 10
+          },
+          "phase": "impact",
+          "outcome": "success"
+        },
+        {
+          "id": "r-relion",
+          "label": "Hitachi Relion 650 IED",
+          "zone": "plc",
+          "role": "Protection & control relay",
+          "activity": "Default FTP account used to delete essential system files",
+          "service": "FTP",
+          "impact": "Device shutdown, cannot restart",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "initial-report",
+            "section": "Hitachi Relion Protection and Control Relays",
+            "page": 10
+          },
+          "phase": "impact",
+          "outcome": "success"
+        },
+        {
+          "id": "r-hmi",
+          "label": "Mikronika Syndis HMI",
+          "zone": "it",
+          "role": "HMI (Windows 10)",
+          "activity": "RDP via known default admin password; PowerShell config changes; Impacket recon; executed DynoWiper (Source.exe)",
+          "service": "RDP / SMB",
+          "impact": "Data wiped by DynoWiper",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "initial-report",
+            "section": "Mikronika HMI Computers",
+            "page": 11
+          },
+          "phase": "impact",
+          "outcome": "success"
+        },
+        {
+          "id": "r-moxa",
+          "label": "Moxa NPort",
+          "zone": "plc",
+          "role": "Serial device server",
+          "activity": "Default credentials used to factory-reset, change password, set IP to unreachable value",
+          "service": "Web interface",
+          "impact": "Device unavailable; recovery delayed",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "initial-report",
+            "section": "Moxa NPort Serial Device Servers",
+            "page": 12
+          },
+          "phase": "impact",
+          "outcome": "success"
+        },
+        {
+          "id": "r-impact",
+          "label": "Loss of monitoring & remote control",
+          "zone": "impact",
+          "role": "Operational impact",
+          "activity": "RTU damage severs DSO communication",
+          "service": "DNP3 / IEC 101",
+          "impact": "Loss of control and view; generation NOT affected",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "initial-report",
+            "section": "Destructive Activities",
+            "page": 8
+          },
+          "phase": "impact",
+          "outcome": "success"
+        }
+      ],
+      "edges": [
+        {
+          "from": "r-attacker",
+          "to": "r-fortigate",
+          "label": "VPN (no MFA)"
+        },
+        {
+          "from": "r-fortigate",
+          "to": "r-gcp",
+          "label": "pivot into VLANs"
+        },
+        {
+          "from": "r-gcp",
+          "to": "r-rtu",
+          "label": "web"
+        },
+        {
+          "from": "r-gcp",
+          "to": "r-mikronika-rtu",
+          "label": "SSH"
+        },
+        {
+          "from": "r-gcp",
+          "to": "r-relion",
+          "label": "FTP"
+        },
+        {
+          "from": "r-gcp",
+          "to": "r-hmi",
+          "label": "RDP"
+        },
+        {
+          "from": "r-gcp",
+          "to": "r-moxa",
+          "label": "web"
+        },
+        {
+          "from": "r-rtu",
+          "to": "r-impact",
+          "label": "bricked"
+        },
+        {
+          "from": "r-mikronika-rtu",
+          "to": "r-impact",
+          "label": "bricked"
+        }
+      ]
+    },
+    {
+      "id": "path-second-chp",
+      "name": "Second CHP Plant – private APN pivot",
+      "incident_id": "second-chp-plant",
+      "nodes": [
+        {
+          "id": "c-attacker",
+          "label": "Internet / Attacker",
+          "zone": "internet",
+          "role": "External threat actor",
+          "activity": "Compromised a wind-farm FortiGate used as the initial entry point",
+          "service": "FortiGate VPN",
+          "impact": "Initial access",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "follow-up-report",
+            "section": "Activity at the Wind Farm",
+            "page": 8
+          },
+          "phase": "initial-access",
+          "outcome": "success"
+        },
+        {
+          "id": "c-fortigate",
+          "label": "Wind-farm FortiGate",
+          "zone": "edge",
+          "role": "VPN concentrator / firewall at the wind farm",
+          "activity": "Remote VPN connection established; factory-reset as the final track-covering action",
+          "service": "SSL-VPN",
+          "impact": "Pivot into wind-farm VLAN",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "follow-up-report",
+            "section": "Activity at the Wind Farm",
+            "page": 8
+          },
+          "phase": "initial-access",
+          "outcome": "success"
+        },
+        {
+          "id": "c-teltonika",
+          "label": "Teltonika RUTX50",
+          "zone": "edge",
+          "role": "Cellular router (Ethernet to firewall VLAN, serial to RTU)",
+          "activity": "Multiple SSH logins in December 2025; SSH tunnel to private APN; later factory-reset",
+          "service": "SSH",
+          "impact": "Bridge into the private APN",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "follow-up-report",
+            "section": "Placement of the Cellular Router",
+            "page": 9
+          },
+          "phase": "lateral-movement",
+          "outcome": "success"
+        },
+        {
+          "id": "c-apn",
+          "label": "Private APN (DSO)",
+          "zone": "apn",
+          "role": "DSO-managed private cellular data network",
+          "activity": "Scanned from 18 December for VNC, HTTP, S7 and Modbus; lacked client isolation",
+          "service": "Private APN / DNP3",
+          "impact": "Lateral movement between facilities",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "follow-up-report",
+            "section": "Leveraging the Private APN for Lateral Movement",
+            "page": 10
+          },
+          "phase": "reconnaissance",
+          "outcome": "success"
+        },
+        {
+          "id": "c-wago",
+          "label": "WAGO PFC200",
+          "zone": "plc",
+          "role": "PLC with integrated cellular modem bridging APN to CHP OT network",
+          "activity": "Default 'admin' web credentials; SSH likely enabled via web UI; SSH tunnel into OT; partition table corrupted at end",
+          "service": "Web / SSH",
+          "impact": "Gateway into CHP OT network; device bricked",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "follow-up-report",
+            "section": "Leveraging the Private APN for Lateral Movement",
+            "page": 10
+          },
+          "phase": "lateral-movement",
+          "outcome": "success"
+        },
+        {
+          "id": "c-ot",
+          "label": "CHP OT Network",
+          "zone": "ot",
+          "role": "Plant OT / SCADA network",
+          "activity": "Week-long reconnaissance; firewall login attempts failed; internal scan of S7/Modbus/CODESYS/RTSP/RDP/VNC",
+          "service": "Multiple",
+          "impact": "Full OT visibility",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "follow-up-report",
+            "section": "Reconnaissance of the CHP Plant Network",
+            "page": 10
+          },
+          "phase": "reconnaissance",
+          "outcome": "success"
+        },
+        {
+          "id": "c-scada",
+          "label": "SCADA server",
+          "zone": "ot",
+          "role": "Supervisory control",
+          "activity": "Web interface accessed repeatedly, including to assess impact afterward",
+          "service": "HTTP",
+          "impact": "Situational awareness for the attacker",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "follow-up-report",
+            "section": "Attack on Siemens PLCs",
+            "page": 12
+          },
+          "phase": "reconnaissance",
+          "outcome": "success"
+        },
+        {
+          "id": "c-siemens",
+          "label": "Siemens S7-300/1200/1500",
+          "zone": "plc",
+          "role": "Programmable logic controllers",
+          "activity": "Placed in STOP mode and password-protected against changes",
+          "service": "S7",
+          "impact": "Turbine & water treatment shutdown",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "follow-up-report",
+            "section": "Attack on Siemens PLCs",
+            "page": 12
+          },
+          "phase": "impact",
+          "outcome": "success"
+        },
+        {
+          "id": "c-moxa",
+          "label": "Moxa servers & switches",
+          "zone": "plc",
+          "role": "7 serial device servers + 3 switches",
+          "activity": "Factory-reset, passwords changed, IPs set unreachable (automated)",
+          "service": "HTTP",
+          "impact": "Devices inaccessible; recovery delayed",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "follow-up-report",
+            "section": "Attack on Moxa Devices",
+            "page": 13
+          },
+          "phase": "impact",
+          "outcome": "success"
+        },
+        {
+          "id": "c-drives",
+          "label": "ABB / Schneider drives",
+          "zone": "plc",
+          "role": "Variable frequency drives",
+          "activity": "Connected to two ABB ACS web interfaces (actions unknown); failed to reach Schneider ATV6xx (wrong port)",
+          "service": "HTTP",
+          "impact": "Unknown / attempted",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "follow-up-report",
+            "section": "Attacks Against Other Devices",
+            "page": 13
+          },
+          "phase": "impact",
+          "outcome": "attempted"
+        },
+        {
+          "id": "c-impact",
+          "label": "Cogeneration process interruption",
+          "zone": "impact",
+          "role": "Operational impact",
+          "activity": "Steam turbine and process-water treatment shut down",
+          "service": "—",
+          "impact": "Short-term outage; no customer supply disruption",
+          "confidence": "confirmed",
+          "source": {
+            "source_id": "follow-up-report",
+            "section": "Disruptive Actions at the CHP Plant",
+            "page": 12
+          },
+          "phase": "impact",
+          "outcome": "success"
+        }
+      ],
+      "edges": [
+        {
+          "from": "c-attacker",
+          "to": "c-fortigate",
+          "label": "VPN"
+        },
+        {
+          "from": "c-fortigate",
+          "to": "c-teltonika",
+          "label": "VLAN"
+        },
+        {
+          "from": "c-teltonika",
+          "to": "c-apn",
+          "label": "SSH tunnel"
+        },
+        {
+          "from": "c-apn",
+          "to": "c-wago",
+          "label": "default creds"
+        },
+        {
+          "from": "c-wago",
+          "to": "c-ot",
+          "label": "SSH tunnel"
+        },
+        {
+          "from": "c-ot",
+          "to": "c-scada",
+          "label": "HTTP"
+        },
+        {
+          "from": "c-ot",
+          "to": "c-siemens",
+          "label": "S7"
+        },
+        {
+          "from": "c-ot",
+          "to": "c-moxa",
+          "label": "HTTP"
+        },
+        {
+          "from": "c-ot",
+          "to": "c-drives",
+          "label": "HTTP"
+        },
+        {
+          "from": "c-siemens",
+          "to": "c-impact",
+          "label": "STOP mode"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local logs / editor files
+*.log
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Source PDFs belong to CERT Polska; fetch them with tools/fetch_reports.py
+CERT_Polska_*.pdf

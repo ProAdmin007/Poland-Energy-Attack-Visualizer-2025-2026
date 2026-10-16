@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Poland Energy Attack Visualizer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%230a1628'/%3E%3Cpath d='M9 2 4 9h3l-1 5 5-7H8z' fill='%23f6a623'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/static/styles.css?v=__ASSET_VERSION__" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"
+          integrity="sha512-vc58qvvBdrDR4etbxMdlTt4GBQk1qjvyORR2nrsPsFPyrs+/u5c3+1Ct6upOgdZoIl7eq6k3a1UPDSNAQi/32A=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-main">
+      <h1>Poland Energy Attack Visualizer</h1>
+      <p id="app-description" class="app-desc">Loading&hellip;</p>
+    </div>
+    <div class="notices">
+      <div class="notice notice-warn" id="location-notice"></div>
+      <div class="notice notice-info" id="attribution-notice"></div>
+    </div>
+  </header>
+
+  <div id="d3-fallback" class="d3-fallback hidden">
+    &#9888; D3.js could not be loaded from the CDN. The attack-path graph and
+    timeline fall back to text views. All data remains available.
+  </div>
+
+  <section class="summary-cards" id="summary-cards" aria-label="Summary"></section>
+
+  <section class="filters" aria-label="Filters">
+    <div class="filter-row">
+      <label class="grow">Search
+        <input type="search" id="search-box" list="search-terms"
+               placeholder="FortiGate, Siemens, WAGO, SSH, S7, private APN&hellip;" />
+        <datalist id="search-terms"></datalist>
+      </label>
+      <label>Incident group
+        <select id="filter-category"><option value="">All</option></select>
+      </label>
+      <label>Domain
+        <select id="filter-domain">
+          <option value="">IT &amp; OT</option>
+          <option value="it">IT</option>
+          <option value="ot">OT</option>
+        </select>
+      </label>
+      <label>Vendor / technology
+        <select id="filter-tech"><option value="">All</option></select>
+      </label>
+      <label>Protocol
+        <select id="filter-protocol"><option value="">All</option></select>
+      </label>
+    </div>
+    <div class="filter-row">
+      <label>Attack phase
+        <select id="filter-phase"><option value="">All</option></select>
+      </label>
+      <label>Outcome
+        <select id="filter-outcome">
+          <option value="">All</option>
+          <option value="success">Succeeded</option>
+          <option value="attempted">Attempted / failed</option>
+          <option value="blocked">Blocked by defenses</option>
+          <option value="unknown">Unknown</option>
+        </select>
+      </label>
+      <label>Impact type
+        <select id="filter-impact"><option value="">All</option></select>
+      </label>
+      <label>Incident status
+        <select id="filter-status"><option value="">All</option></select>
+      </label>
+      <label class="check">
+        <input type="checkbox" id="filter-nonenergy" checked />
+        Show non-energy target
+      </label>
+      <button id="reset-filters" type="button">Reset</button>
+      <span id="filter-result" class="filter-result" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <main class="layout">
+    <aside class="col col-left" aria-label="Incident clusters">
+      <h2>Incident clusters</h2>
+      <p class="col-hint">Schematic view &mdash; no real locations. Click a cluster to focus.</p>
+      <div id="poland-map"></div>
+      <div id="incident-list"></div>
+    </aside>
+
+    <section class="col col-center" aria-label="Attack path">
+      <h2>Attack path</h2>
+      <div class="path-switch" id="path-switch"></div>
+      <div id="attack-path"></div>
+      <div class="legend" id="zone-legend"></div>
+    </section>
+
+    <aside class="col col-right" aria-label="Details">
+      <h2>Details</h2>
+      <div id="detail-panel" class="detail-panel">
+        <p class="placeholder">Select an incident, a graph node or a timeline event to see details and the exact report page.</p>
+      </div>
+    </aside>
+  </main>
+
+  <section class="timeline-section" aria-label="Timeline">
+    <div class="section-head">
+      <h2>Attack timeline</h2>
+      <div class="zoom-switch" id="timeline-zoom" role="group" aria-label="Timeline range">
+        <button type="button" data-zoom="dec" class="active">December 2025</button>
+        <button type="button" data-zoom="all">Full campaign</button>
+      </div>
+    </div>
+    <p class="col-hint" id="timeline-hint">Only dates stated in the reports are shown. Marker shape shows how precise the date is.</p>
+    <div id="timeline"></div>
+    <div class="legend" id="timeline-legend"></div>
+    <details class="tl-list-toggle" open>
+      <summary>Event list</summary>
+      <div id="timeline-list"></div>
+    </details>
+  </section>
+
+  <section class="table-section" aria-label="Assets, techniques and impact">
+    <h2>Assets, techniques &amp; impact</h2>
+    <div class="table-scroll">
+      <table id="asset-table">
+        <thead>
+          <tr><th>Incident</th><th>Status</th><th>Key assets</th><th>Technologies</th><th>Protocols</th><th>Impact</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="mitre-section" aria-label="MITRE ATT&amp;CK techniques">
+    <h2>MITRE ATT&amp;CK techniques</h2>
+    <div id="mitre-list"></div>
+  </section>
+
+  <footer class="app-footer">
+    <h2>Sources</h2>
+    <ul id="source-list"></ul>
+    <p class="disclaimer" id="page-notice"></p>
+    <p class="disclaimer">
+      This is a defensive visualization built solely from two public CERT Polska reports.
+      It contains no exploit or malware code. Hypotheses are marked as such, and attribution is
+      shown as CERT Polska frames it, not as definitive.
+    </p>
+  </footer>
+
+  <div id="tooltip" class="tooltip hidden" role="tooltip"></div>
+
+  <script src="/static/app.js?v=__ASSET_VERSION__"></script>
+</body>
+</html>
