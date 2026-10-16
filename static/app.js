@@ -74,7 +74,23 @@
   };
 
   // --------------------------------------------------------------------- //
+  // Standalone build (one HTML file, no server): API responses are embedded
+  // by tools/build_standalone.py as window.__STANDALONE_DATA__.
+  const STANDALONE = window.__STANDALONE_DATA__ || null;
+
+  // Where a "PDF p. N" link points: the server's /reports route, or (no
+  // server) straight to the official PDF on cert.pl.
+  function reportHref(src, page) {
+    const hash = page ? `#page=${page}` : "";
+    if (STANDALONE) return src && src.pdf_url ? src.pdf_url + hash : null;
+    return `/reports/${src.id}${hash}`;
+  }
+
   async function api(path) {
+    if (STANDALONE) {
+      if (!(path in STANDALONE)) throw new Error(path + " missing from standalone data");
+      return STANDALONE[path];
+    }
     const res = await fetch(path);
     if (!res.ok) throw new Error(path + " -> " + res.status);
     return res.json();
@@ -96,11 +112,11 @@
     const src = (state.metadata.sources || []).find((s) => s.id === ref.source_id);
     const title = src ? src.short || src.title : ref.source_id;
     const printed = src && src.printed_page_offset ? ref.page - src.printed_page_offset : null;
-    const link = el("a", {
-      class: "src-link", href: `/reports/${ref.source_id}#page=${ref.page}`,
-      target: "_blank", rel: "noopener",
-      title: printed ? `Printed page ${printed} in the report footer` : "",
-    }, [`PDF p. ${ref.page}`]);
+    const href = src ? reportHref(src, ref.page) : null;
+    const link = href
+      ? el("a", { class: "src-link", href: href, target: "_blank", rel: "noopener",
+          title: printed ? `Printed page ${printed} in the report footer` : "" }, [`PDF p. ${ref.page}`])
+      : el("span", { class: "src-link" }, [`PDF p. ${ref.page}`]);
     return el("div", { class: "source-line" }, [`Source: CERT Polska, ${title}, ${ref.section}, `, link, "."]);
   }
 
@@ -970,7 +986,7 @@
     ul.innerHTML = "";
     (state.metadata.sources || []).forEach((s) => {
       const li = el("li", {}, [
-        el("a", { href: `/reports/${s.id}`, target: "_blank", rel: "noopener" }, [s.title]),
+        el("a", { href: reportHref(s, null) || s.url || "#", target: "_blank", rel: "noopener" }, [s.title]),
         " — " + s.publisher + " (" + s.file + ")",
       ]);
       if (s.url) {

@@ -10,6 +10,9 @@ Wind and solar farms, two combined heat and power (CHP) plants and a manufacturi
 ![No build step](https://img.shields.io/badge/frontend-vanilla%20JS%2C%20no%20build-555)
 ![Purpose](https://img.shields.io/badge/purpose-defensive%20%2F%20educational-2ea44f)
 
+> **No install needed:** download **[Poland-Energy-Attack-Visualizer.html](https://github.com/ProAdmin007/Poland-Energy-Attack-Visualizer-2025-2026/releases/latest/download/Poland-Energy-Attack-Visualizer.html)** and double-click it.
+> One file of about 400 KB, opened in any modern browser. It works offline: no server, no Python, no internet.
+
 ![Overview of the app](docs/screenshots/overview.png)
 
 ---
@@ -43,6 +46,14 @@ This visualizer is for OT/ICS security engineers, SOC analysts, students and any
 </table>
 
 ## Quick start
+
+### Option A: one HTML file (easiest)
+
+Download [`Poland-Energy-Attack-Visualizer.html`](https://github.com/ProAdmin007/Poland-Energy-Attack-Visualizer-2025-2026/releases/latest/download/Poland-Energy-Attack-Visualizer.html) and open it. Everything is inside the file: the data, the styles, the code and D3. It works offline, and "PDF p. N" links open the official CERT Polska PDF at that page (that part needs internet).
+
+The same file is in the root of this repository. On GitHub, opening it shows the source; use the download link above, or **Raw → Save as**.
+
+### Option B: run the server
 
 Requires Python 3.12 or newer.
 
@@ -85,16 +96,29 @@ python tools/verify_sources.py      # -> 49/49 references verified
 ## Architecture
 
 ```
+├── Poland-Energy-Attack-Visualizer.html   standalone build (generated)
 ├── app.py                 FastAPI: read-only API, PDF route, static frontend
 ├── data/incidents.json    the whole dataset (single source of truth)
 ├── static/
 │   ├── index.html
 │   ├── app.js             vanilla JS + D3 (graph, timeline, filters)
-│   └── styles.css
+│   ├── styles.css
+│   └── vendor/            D3 v7.9.0 + its ISC license (for the standalone build)
 ├── tools/
-│   ├── fetch_reports.py   download the source PDFs from cert.pl
-│   └── verify_sources.py  check every source reference against the PDFs
+│   ├── build_standalone.py  build the one-file HTML version
+│   ├── fetch_reports.py     download the source PDFs from cert.pl
+│   └── verify_sources.py    check every source reference against the PDFs
 └── docs/screenshots/
+```
+
+### Standalone build
+
+`Poland-Energy-Attack-Visualizer.html` is generated from the same files the server uses, so the two versions cannot drift apart. The build takes the API responses from the real FastAPI app (with its startup validation) and inlines them, `styles.css`, D3 and `app.js` into `index.html`.
+
+```bash
+pip install -r requirements-dev.txt
+python tools/build_standalone.py           # rebuild after changing data or code
+python tools/build_standalone.py --check   # exits 1 if the committed file is stale
 ```
 
 - **Backend:** Python, FastAPI, Uvicorn and Pydantic. The dataset is validated at startup, including cross-references (source ids, incident ids, graph edges), so a broken data file stops the server with a readable error instead of rendering wrong content. There are no write endpoints, no database and no authentication.
@@ -121,7 +145,7 @@ python tools/verify_sources.py      # -> 49/49 references verified
 - **Timeline event:** `date` and an optional `date_end` / `time` for sorting, plus `date_label` (as the report words it) and a `precision` of `exact`, `approximate`, `date-only` or `date-range`. It also has a phase, evidence, outcome and source references. Campaign-wide events have `incident_id: null`.
 - **Attack-path node:** zone, role, observed activity, service, impact, evidence, outcome, phase and source.
 
-To extend or correct the data, edit the JSON, run `python tools/verify_sources.py` and restart the server. No code changes are needed.
+To extend or correct the data, edit the JSON, run `python tools/verify_sources.py`, rebuild the standalone file with `python tools/build_standalone.py` and restart the server. No code changes are needed.
 
 ## Limitations
 
@@ -136,3 +160,5 @@ This is a **defensive and educational** visualization. It contains no exploit co
 ## Credits
 
 All incident content comes from the analysis by **[CERT Polska](https://cert.pl/en/)** (NASK – National Research Institute). This project is independent and not affiliated with or endorsed by CERT Polska.
+
+The standalone file bundles [D3.js](https://d3js.org) v7.9.0, © Mike Bostock, under the ISC License (see `static/vendor/D3-LICENSE.txt`).
