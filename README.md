@@ -162,3 +162,13 @@ This is a **defensive and educational** visualization. It contains no exploit co
 All incident content comes from the analysis by **[CERT Polska](https://cert.pl/en/)** (NASK – National Research Institute). This project is independent and not affiliated with or endorsed by CERT Polska.
 
 The standalone file bundles [D3.js](https://d3js.org) v7.9.0, © Mike Bostock, under the ISC License (see `static/vendor/D3-LICENSE.txt`).
+
+---
+
+<div align="center">
+
+## ☕ Support
+
+<a href="https://ko-fi.com/proadmin007" target="_blank"><img height="48" src="https://storage.ko-fi.com/cdn/kofi2.png?v=6" alt="Buy Me a Coffee at ko-fi.com" /></a>
+
+</div>
